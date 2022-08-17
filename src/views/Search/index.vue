@@ -15,18 +15,25 @@
     </div>
     <div class="hot_search" v-else>
       <p class="hot_title">最佳匹配</p>
-      <van-cell v-for="obj in resultList" :key="obj.id" :title="obj.name" :label="obj.ar[0].name + ' ' + obj.name" center >
-        <template #right-icon>
-          <van-icon name="play-circle-o" class="play-icon" />
-        </template>
-      </van-cell>
+      <song-item
+        v-for="obj in resultList" 
+        :key="obj.id"
+        :name="obj.name"
+        :author="obj.ar[0].name"
+        :id="obj.id"
+      >
+      </song-item>
     </div>
   </div>
 </template>
 
 <script>
   import { hotSearchAPI, searchResultAPI } from '@/api';
+  import SongItem from '@/components/SongItem';
   export default {
+    components: {
+      SongItem
+    },
     data(){
       return{
         searchValue: "",
@@ -40,8 +47,16 @@
       this.hotList = res.data.result.hots
     },
     methods: {
-      btn(str){
+      async btn(str){
         this.searchValue = str;
+        const searchRes = await searchResultAPI({
+            type: 1,
+            keywords: this.searchValue,
+          });
+          this.resultList = searchRes.data.result.songs;
+          setTimeout(()=>{
+            clearTimeout(this.timer)
+          })
       }
     },
     watch: {

@@ -3,7 +3,9 @@
     <van-nav-bar :title="activeTitle" fixed/>
 
     <div class="main">
-      <router-view></router-view>
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
     </div>
 
     <van-tabbar route @change="changeFn">

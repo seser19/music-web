@@ -13,17 +13,24 @@
       </van-col>
     </van-row>
     <p class="title">最新音乐</p>
-    <van-cell v-for="obj in newList" :key="obj.id" :title="obj.name" :label="obj.song.artists[0].name + ' ' + obj.name" center >
-      <template #right-icon>
-        <van-icon name="play-circle-o" class="play-icon" />
-      </template>
-    </van-cell>
+    <song-item 
+      v-for="obj in newList" 
+      :key="obj.id"
+      :name="obj.name"
+      :author="obj.song.artists[0].name"
+      :id="obj.id"
+    >  
+    </song-item>
   </div>
 </template>
 
 <script>
   import { recommendMusicAPI, newSongsAPI } from '@/api/index'
+  import SongItem from '@/components/SongItem'
   export default {
+    components: {
+      SongItem
+    },
     async created(){
       const res = await recommendMusicAPI({limit: 6});
       const songRes = await newSongsAPI();
