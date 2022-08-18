@@ -3,6 +3,7 @@
         :title="name"
         :label="author + ' ' + name"
         center
+        @click="$router.push({path: '/comment',query: {id: id}})"
     >
         <template #right-icon>
             <van-icon name="play-circle-o" class="play-icon" @touchstart="playFn" />
