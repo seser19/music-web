@@ -2,25 +2,34 @@
   <div>
     <van-nav-bar title="评论" fixed left-arrow @click-left="$router.back()"/>
     <div class="main">
-        <van-cell v-for="(obj, index) in list" :key="index">
-            <template>
-                <div class="wrap">
-                    <div class="img_wrap">
-                        <img :src="obj.user.avatarUrl" alt=""/>
-                    </div>
-                    <div class="conten_wrap">
-                        <div class="header_wrap">
-                            <div class="info_wrap">
-                                <p>{{ obj.user.nickname }}</p>
-                                <p>{{ obj.time }}</p>
+        <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+            <van-list
+                v-model="loading"
+                :finished="finished"
+                finished-text="没有更多了"
+                @load="onLoad"
+            >
+                <van-cell v-for="(obj, index) in list" :key="index">
+                    <template>
+                        <div class="wrap">
+                            <div class="img_wrap">
+                                <img :src="obj.user.avatarUrl" alt=""/>
                             </div>
-                            <div>{{obj.likedCount}}点赞</div>
+                            <div class="conten_wrap">
+                                <div class="header_wrap">
+                                    <div class="info_wrap">
+                                        <p>{{ obj.user.nickname }}</p>
+                                        <p>{{ obj.time }}</p>
+                                    </div>
+                                    <div>{{obj.likedCount}}点赞</div>
+                                </div>
+                                <div class="footer_wrap">{{obj.content}}</div>
+                            </div>
                         </div>
-                        <div class="footer_wrap">{{obj.content}}</div>
-                    </div>
-                </div>
-            </template>
-        </van-cell>
+                    </template>
+                </van-cell>
+            </van-list>
+        </van-pull-refresh>
     </div>
     
   </div>
@@ -29,19 +38,38 @@
 <script>
   import { getCommentListAPI } from '@/api/index'
   export default {
-    async created(){
-      const res = await getCommentListAPI({
-        id: this.$route.query.id,
-        limit: 20,
-        //offset  分页
-      });
-      this.list = res.data.comments;
-    },
     data(){
       return{
-        list: []
+        list: [],
+        isLoading: false, //下拉刷新
+        loading: false, //上拉加载状态
+        finished: false,
+        page: 1, //当前评论页数
       }
     },
+    methods:{
+        async getList(){
+            const res = await getCommentListAPI({
+                id: this.$route.query.id,
+                limit: 20,
+                offset: (this.page - 1) * 20 //分页
+            });
+            res.data.comments.forEach(obj => this.list.push(obj));
+            this.list = res.data.comments;
+            this.isLoading = false;
+            this.loading = false; //每次请求完数据都要把loading关闭，不然不会再次触发onLoad
+        },
+        async onRefresh(){ //下拉刷新，请求新的数据
+            //当UI层面手动下拉，内部会自动把isLoading改成true
+            this.list = [];
+            this.page = 1;
+            this.getList();
+        },
+        async onLoad(){ //触底加载下一页数据，加载后要关闭loading为false
+            this.getList();
+            this.page++;
+        }
+    }
   }
 </script>
 
